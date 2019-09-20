@@ -52,6 +52,9 @@ export default class Login extends Component {
                 </Row>
 
             </Container>
+            <div className="Footer">
+                <span></span>
+            </div>
             </div>
         )
     }
