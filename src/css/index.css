@@ -7,3 +7,9 @@
     
     display: flex;
 }
+
+.Footer{
+    position: absolute;
+    bottom: 0;
+    padding: 20px
+}

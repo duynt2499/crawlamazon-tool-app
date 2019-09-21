@@ -48,3 +48,8 @@
 .logo-div{
     margin-top: 50px;
 }
+.Footer{
+    position: absolute;
+    bottom: 0;
+    padding: 20px
+}

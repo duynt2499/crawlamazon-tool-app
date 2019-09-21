@@ -2,12 +2,76 @@ import React, { Component } from 'react'
 import {Container,Col,Row,FormCheck} from 'react-bootstrap';
 import './../css/login.css';
 import logo from './../Images/toolLogo.png'
+import ReactLoading from 'react-loading';
+import axios from 'axios';
+import BASE_URL from './../util/globalVar'
+import Alert from './../Components/Alert';
+import {
+    Redirect,
+  } from "react-router-dom";
 export default class Login extends Component {
-    render() {
-        return (
-            <div className='container-1'>
-            <Container >
 
+    state = {
+        isLoading : false,
+        email : '',
+        password :'',
+        msg : '',
+        redirectToReferrer: false
+    }
+
+    login = () => {
+        this.props.fakeAuth.authenticate(() => {
+          this.setState({ redirectToReferrer: true });
+        });
+      };
+
+
+    submitUSer = async () => {
+        // let signIn = await axios.post(`http://localhost:4000/api/users/signIn`,{
+        //     email : this.state.email,
+        //     password : this.state.password
+        // });
+
+        let test = await axios.get(`${BASE_URL}/api/users/signIn?email=${this.state.email}&password=${this.state.password}`);
+        this.setState({isLoading : true});
+
+        await setTimeout(()=>{
+            this.setState({isLoading : false});
+            if(test.data.status === 204)
+            {
+                this.setState({msg : test.data.errors[0].msg})
+            }
+            else if(test.data.status === 200)
+            {
+                localStorage.setItem('token', test.data.token);
+                this.login();
+                
+            }
+            
+        },2000);
+        
+        
+    }
+
+    _renderLoadingBar = () => {
+        return this.state.isLoading === true ? <ReactLoading type='spin' color='#FD5E1F' height={30} width={30} /> : '';
+    }
+
+
+    _renderAlert = () => {
+        return this.state.msg !== '' ? <Alert color='red' msg={this.state.msg} size={13}></Alert> : '';
+    }
+
+    render() {
+        let { redirectToReferrer } = this.state;
+
+        if (redirectToReferrer) return <Redirect to='/manager' />;
+        return (
+            <div className='container-parent'>
+            <div className='container-1'>
+            
+            <Container >
+            
                 <Row className='logo-div'>
                     <Col xs={12} className='item-center'>
                         <img src={logo} width={100} height={100}></img>
@@ -25,7 +89,7 @@ export default class Login extends Component {
                        <span className='label'>Email</span>
                     </Col>
                     <Col xs={12} className='item-center'>
-                        <input className='inputStyle'></input>
+                        <input onChange={(e) => {this.setState({email : e.target.value})}} className='inputStyle'></input>
                     </Col>
                 </Row>
 
@@ -34,28 +98,42 @@ export default class Login extends Component {
                         <span className='label'>Password</span>
                     </Col>
                     <Col xs={12} >
-                        <input type='password' className='inputStyle'></input>
+                        <input onChange={(e) => {this.setState({password : e.target.value})}} type='password' className='inputStyle'></input>
                     </Col>
                 </Row>
 
                 <Row className='col-input' >
                     
                     <Col xs={12} >
-                        <input type='checkbox' value='Save log In'/><span className="label" style={{marginLeft:5}}>save log in</span>
+                        <input type='checkbox' value='true'/><span className="label" style={{marginLeft:5}}>lưu đăng nhập</span>
                     </Col>
                 </Row>
 
                 <Row>
                     <Col xs={12}>
-                        <button className='buttonStyle'>Log In</button>
+                        <button onClick={() => {this.submitUSer()}} className='buttonStyle'>Đăng nhập</button>
+                    </Col>
+                </Row>
+
+                <Row style={{marginTop : 20}}>
+                    <Col xs={12} className='item-center'>
+                       {this._renderLoadingBar()}
+                    </Col>
+                </Row>
+
+                <Row style={{marginTop : 20}}>
+                    
+                    <Col xs={12} className='item-center'>
+                       {this._renderAlert()}
                     </Col>
                 </Row>
 
             </Container>
             <div className="Footer">
-                <span></span>
+                <span style={{fontSize : '13px',color:'gray', fontWeight: 'lighter'}}>Liên hệ với admin để được cấp tài khoản sử dụng</span>
             </div>
             </div>
+           </div>
         )
     }
 }
