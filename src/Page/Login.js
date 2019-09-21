@@ -6,6 +6,7 @@ import ReactLoading from 'react-loading';
 import axios from 'axios';
 import BASE_URL from './../util/globalVar'
 import Alert from './../Components/Alert';
+
 import {
     Redirect,
   } from "react-router-dom";
@@ -27,10 +28,7 @@ export default class Login extends Component {
 
 
     submitUSer = async () => {
-        // let signIn = await axios.post(`http://localhost:4000/api/users/signIn`,{
-        //     email : this.state.email,
-        //     password : this.state.password
-        // });
+        
 
         let test = await axios.get(`${BASE_URL}/api/users/signIn?email=${this.state.email}&password=${this.state.password}`);
         this.setState({isLoading : true});
@@ -129,9 +127,7 @@ export default class Login extends Component {
                 </Row>
 
             </Container>
-            <div className="Footer">
-                <span style={{fontSize : '13px',color:'gray', fontWeight: 'lighter'}}>Liên hệ với admin để được cấp tài khoản sử dụng</span>
-            </div>
+           
             </div>
            </div>
         )
