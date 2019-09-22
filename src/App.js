@@ -19,8 +19,8 @@ function App() {
             crossorigin="anonymous"
           />
           <Router>
-            <Route path="/" exact   component={() => <Login fakeAuth={fakeAuth}></Login>}   />
-            <PrivateRoute path="/manager"  component={() => <ManagerPage  fakeAuth={fakeAuth}></ManagerPage>} />
+            <Route path="/" exact component={() => <ManagerPage  fakeAuth={fakeAuth}></ManagerPage>}    />
+            <PrivateRoute path="/manager"  component={() => <Login fakeAuth={fakeAuth}></Login>}  />
           </Router>
           
     </div>

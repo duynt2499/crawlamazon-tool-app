@@ -3,17 +3,46 @@ import { Container, Col,Row,Card,ListGroup,ListGroupItem } from 'react-bootstrap
 import './../../css/managerPage.css';
 import MyVerticallyCenteredModal from './../../Components/LoadingModal'
 import BASE_URL from './../../util/globalVar'
-import { FaAmazon,FaSpider,FaCubes,FaFeatherAlt,FaImage,FaArrowAltCircleRight,FaExchangeAlt } from 'react-icons/fa';
+import { FaAmazon,FaSpider,FaPenNib,FaCalendarCheck,FaCubes,FaFeatherAlt,FaImage,FaArrowAltCircleRight,FaExchangeAlt } from 'react-icons/fa';
 import Axios from 'axios';
+import Alert from './../../Components/Alert';
+import AlertModal from './../../Components/AlertModal'
+import ReactLoading from 'react-loading';
+import Modal from 'react-responsive-modal';
+import { async } from 'q';
 class Crawler extends Component {
     state = {
         keyword : '',
         page : 1,
         modalShow : false,
         listData : [],
-        suggestions : []
+        suggestions : [],
+        open : false,
+        msg : '',
+        isLoading : false,
+        date : '',
+        oldString : '',
+        newString : '',
+        modalShowAlert : false,
+        msgModal : '',
+        listDataCrawler : []
 
     }
+    _renderLoadingBar = () => {
+        return this.state.isLoading === true ? <ReactLoading type='spin' color='#FD5E1F' height={30} width={30} /> : '';
+    }
+
+
+    _renderAlert = () => {
+        return this.state.msg !== '' ? <Alert color='red' msg={this.state.msg} size={13}></Alert> : '';
+    }
+    onOpenModal = () => {
+        this.setState({ open: true });
+      };
+     
+      onCloseModal = () => {
+        this.setState({ open: false });
+      };
     async _downloadAllImage() {
         if(this.state.listData.length !== 0)
         {
@@ -22,14 +51,26 @@ class Crawler extends Component {
             })
             if(DownloadImage.data.status === 200)
             {
-                alert('Download thành công vui lòng kiểm tra file download');
+                this.setState({
+                    modalShowAlert : true,
+                    msgModal : 'Download thành công vui lòng kiểm tra file download'
+                })
+              
             }
             else if(DownloadImage.data.status === 204)
             {
-                alert('Lỗi kết nối vui lòng thử lại')
+                this.setState({
+                    modalShowAlert : true,
+                    msgModal : 'Lỗi kết nối vui lòng thử lại'
+                })
+               
             }
         }else {
-            alert('Chưa có ảnh để tải');
+            this.setState({
+                modalShowAlert : true,
+                msgModal : 'Chưa có ảnh để tải vui lòng crawl dữ liệu về'
+            })
+            
         }
     }
     
@@ -53,7 +94,13 @@ class Crawler extends Component {
         if(crawlData.data.status === 200)
         {
             this.setState({
-                listData : crawlData.data.data
+                listDataCrawler : crawlData.data.data.filter((value) => {
+                    return (value.rank >= 10000 && value.rank <= 1500000); 
+                })
+            })
+
+            this.setState({
+                listData : this.state.listDataCrawler
             })
             
             this.setState({
@@ -63,7 +110,11 @@ class Crawler extends Component {
             this.setState({
                 modalShow : false
             })
-            alert(crawlData.data.msg)
+            this.setState({
+                modalShowAlert : true,
+                msgModal : crawlData.data.msg
+            })
+           
         }
     }
     _renderDataCrawler = () => {
@@ -98,6 +149,40 @@ class Crawler extends Component {
             )
         })
     }
+
+    _changeString =  () => {
+         this.setState({
+            listData : this.state.listDataCrawler.map((value) =>{
+                let newString = value.name.replace(this.state.oldString,this.state.newString);
+                value.name = newString;
+                return value;
+            })
+        })
+        this.setState({
+            modalShowAlert : true,
+            msgModal : 'Đổi chuỗi thành công'
+        })
+        
+
+
+    }
+
+    _filterDate = () => {
+        if(this.state.date === '')
+        {
+            this.setState({
+                listData : this.state.listDataCrawler
+            })
+        }
+        else {
+        this.setState({
+            listData : this.state.listDataCrawler.filter((value) => {
+                return this.state.date == value.date;
+            })
+        })
+    }
+    }
+
     render() {
         return (
             <div style={{}}>
@@ -147,8 +232,12 @@ class Crawler extends Component {
                                     <Col xs={3}>
                                     <button onClick={() => {this._downloadAllImage()}} className='buttonStyle' style={{backgroundColor:'#673ab7'}}><FaImage style={{fontSize : 20}}/> Download All</button>
                                     </Col>
-                                    <Col xs={6}>
-                                        
+                                    <Col xs={3}>
+                                    <button onClick={() => {this.onOpenModal()}} className='buttonStyle'><FaPenNib/> Đổi tên png</button>
+                                    </Col>
+                                    <Col xs={3}>
+                                    <input type='text'  onChange={(e) => {this.setState({date : e.target.value})}} placeholder='Nhập ngày' max={1000} style={{width:80,height:40}}/>
+                                    <button onClick={() => {this._filterDate()}} className='buttonStyle-2'><FaCalendarCheck/></button>
                                     </Col>
                                     <Col xs={3}>
                                     <input type='number' min={1} onChange={(e) => {this.setState({page : e.target.value})}} defaultValue={this.state.page} max={1000} style={{width:40,height:40}}/>
@@ -170,6 +259,58 @@ class Crawler extends Component {
                     show={this.state.modalShow}
                     onHide={() => {this.setState({modalShow : false})}}
                 />
+                <AlertModal
+                     show={this.state.modalShowAlert}
+                     onHide={() => {this.setState({modalShowAlert : false})}}
+                     msg={this.state.msgModal}
+                ></AlertModal>
+                <Modal open={this.state.open} onClose={this.onCloseModal} center>
+                        <Container>
+                            <Row>
+                                <Col>
+                                    <h5 style={{color : '#FD5E1F'}}>Thay thế chuỗi</h5>
+                                </Col>
+                            </Row>
+
+                            <Row>
+                                <Col xs={12} style={{marginTop : 10,marginBottom:5}}>
+                                    <span>Chuỗi ban đầu</span>
+                                </Col>
+                                <Col xs={12}>
+                                <input placeholder={'Nhập chuỗi ban đầu'} onChange={(e) => {this.setState({oldString : e.target.value})}} className='inputStyle'/> 
+                                </Col>
+                            </Row>
+
+                            <Row>
+                                <Col xs={12} style={{marginTop : 10,marginBottom:5}}>
+                                    <span>Chuỗi mới</span>
+                                </Col>
+                                <Col xs={12}>
+                                <input placeholder={'Nhập chuỗi mới'} type="text" onChange={(e) => {this.setState({newString : e.target.value})}} className='inputStyle'/> 
+                                </Col>
+                            </Row>
+
+                            <Row style={{marginTop : 15,marginBottom:5}}>
+                                <Col xs={12}>
+                                <button onClick={() => {this._changeString()}} className='buttonStyle'>Đổi ký tự</button>
+                                </Col>
+                            </Row>
+
+                            <Row style={{marginTop : 20}}>
+                                <Col xs={12} className='item-center'>
+                                {this._renderLoadingBar()}
+                                </Col>
+                            </Row>
+
+                            <Row style={{marginTop : 20}}>
+                    
+                                <Col xs={12} className='item-center'>
+                                {this._renderAlert()}
+                                </Col>
+                            </Row>
+
+                        </Container>
+                </Modal>
             </div>
         );
     }

@@ -1,16 +1,21 @@
 import React, { Component } from 'react'
 import {Navbar, Nav,FormControl , Button,Form, Row,Container, Col} from 'react-bootstrap';
 import Avatar from './../Components/Avatar';
-import { FaSignOutAlt } from 'react-icons/fa';
+import { FaSignOutAlt,FaUserTie,FaUserTimes } from 'react-icons/fa';
 import './../css/managerPage.css';
 import Crawler from './ChilPage/Crawler';
 import {FaSpider} from 'react-icons/fa'
 import Modal from 'react-responsive-modal';
+import Modal2 from 'react-responsive-modal';
 import BASE_URL from './../util/globalVar';
 import axios from 'axios';
 import './../css/login.css';
 import Alert from './../Components/Alert';
 import ReactLoading from 'react-loading';
+import AlertModal from './../Components/AlertModal'
+import { async } from 'q';
+
+
 
 export default class ManagerPage extends Component {
 
@@ -23,7 +28,12 @@ export default class ManagerPage extends Component {
         open : false,
         name : '',
         msg : '',
-        isLoading : false
+        isLoading : false,
+        modalShowAlert : false,
+        msgModal : '',
+        open2 : false,
+        listUser : [],
+        isLoading2 : false
     }
 
     componentDidMount = async () => {
@@ -40,6 +50,23 @@ export default class ManagerPage extends Component {
             }
         }
     }
+    _onDeleteUserById = async (id) => {
+        let delteUser = await axios.get(`${BASE_URL}/api/users/deleteUserById?id=${id}`);
+        if(delteUser.data.status === 200)
+        {
+            this.setState({
+                modalShowAlert : true,
+                msgModal : 'Xóa user thành công'
+            });
+        }
+        let getAllUser = await axios.get(`${BASE_URL}/api/users/getAllUser`);
+       
+        this.setState({
+            listUser : getAllUser.data.listUser,
+            isLoading : false
+        })
+        
+    }
     onOpenModal = () => {
         this.setState({ open: true });
       };
@@ -47,6 +74,35 @@ export default class ManagerPage extends Component {
       onCloseModal = () => {
         this.setState({ open: false });
       };
+      onOpenModal2 = async () => {
+        this.setState({
+            
+            isLoading : true
+        })
+        this.setState({ open2: true });
+        let getAllUser = await axios.get(`${BASE_URL}/api/users/getAllUser`);
+       
+        this.setState({
+            listUser : getAllUser.data.listUser,
+            isLoading : false
+        })
+        console.log(this.state.listUser);
+      };
+     
+      onCloseModal2 = () => {
+        this.setState({ open2: false });
+      };
+
+      _renderListUser = () => {
+          return this.state.listUser.map((value) => {
+              if(value.role !== 'admin')
+              {
+                return (<Row style={{marginBottom: 5}}><Col xs={9}><FaUserTie/> {value.email}</Col> 
+                    <Col xs={3}><button onClick={() => this._onDeleteUserById(value._id)} className='buttonStyle'><FaUserTimes/> Xóa</button></Col></Row>)
+              }
+               
+          })
+      }
 
       submitUSer = async () => {
         
@@ -63,7 +119,10 @@ export default class ManagerPage extends Component {
             else if(test.data.status === 200)
             {
                 
-                alert('Thêm tài khoản nhân viên thành công ');
+                this.setState({
+                    modalShowAlert : true,
+                    msgModal : 'Thêm nhân viên thành công'
+                });
                 this.setState({open : false})
             }
             
@@ -75,6 +134,8 @@ export default class ManagerPage extends Component {
     _renderLoadingBar = () => {
         return this.state.isLoading === true ? <ReactLoading type='spin' color='#FD5E1F' height={30} width={30} /> : '';
     }
+
+
 
 
     _renderAlert = () => {
@@ -96,6 +157,7 @@ export default class ManagerPage extends Component {
                 <Nav className="mr-auto">
                 <Nav.Link onClick={() => {this.setState({page : 'crawler'})}}>Crawler</Nav.Link>
                 {this.state.checkRole === true ? <Nav.Link  ><span onClick={() => {this.onOpenModal()}}>Tạo tài khoản mới</span></Nav.Link> : ''}
+                {this.state.checkRole === true ? <Nav.Link  ><span onClick={() => {this.onOpenModal2()}}>Quản lý tài khoản</span></Nav.Link> : ''}
                 
                 </Nav>
                 
@@ -166,6 +228,38 @@ export default class ManagerPage extends Component {
 
                         </Container>
                 </Modal>
+
+                <Modal2 open={this.state.open2} onClose={this.onCloseModal2} center>
+                        <Container style={{width : 500}}>
+                            <Row>
+                                <Col>
+                                    <h5 style={{color : '#FD5E1F'}}>Quản lý tài khoản</h5>
+                                </Col>
+                            </Row>
+                           
+                            <Row style={{marginTop : 20}}>
+                                <Col xs={12} className='item-center'>
+                                {this._renderLoadingBar()}
+                                </Col>
+                            </Row>
+                            {this._renderListUser()}
+
+                            <Row style={{marginTop : 15,marginBottom:5}}>
+                                <Col xs={12}>
+                                <button onClick={() => {this.onCloseModal2()}} className='buttonStyle'>Đóng</button>
+                                </Col>
+                            </Row>
+
+                            
+
+                            
+                        </Container>
+                </Modal2>
+                <AlertModal
+                     show={this.state.modalShowAlert}
+                     onHide={() => {this.setState({modalShowAlert : false})}}
+                     msg={this.state.msgModal}
+                ></AlertModal>
             </div>
         )
     }
