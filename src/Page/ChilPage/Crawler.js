@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Container, Col,Row,Card,ListGroup,ListGroupItem } from 'react-bootstrap';
+import { Container, Col,Row,Card,ListGroup } from 'react-bootstrap';
 import './../../css/managerPage.css';
 import MyVerticallyCenteredModal from './../../Components/LoadingModal'
 import BASE_URL from './../../util/globalVar'
@@ -9,7 +9,7 @@ import Alert from './../../Components/Alert';
 import AlertModal from './../../Components/AlertModal'
 import ReactLoading from 'react-loading';
 import Modal from 'react-responsive-modal';
-import { async } from 'q';
+
 class Crawler extends Component {
     state = {
         keyword : '',
@@ -25,7 +25,9 @@ class Crawler extends Component {
         newString : '',
         modalShowAlert : false,
         msgModal : '',
-        listDataCrawler : []
+        listDataCrawler : [],
+        listDataNewName : [],
+        listDataOldName : []
 
     }
     _renderLoadingBar = () => {
@@ -47,8 +49,11 @@ class Crawler extends Component {
         if(this.state.listData.length !== 0)
         {
             const DownloadImage = await Axios.post(`${BASE_URL}/api/crawlDataAmazon/DowloadImg`,{
-                    listData: this.state.listData
+                    listData: this.state.listDataOldName
             })
+            const DownloadImageSS = await Axios.post(`${BASE_URL}/api/crawlDataAmazon/DowloadImgChangeName`,{
+                listData: this.state.listDataNewName
+        })
             if(DownloadImage.data.status === 200)
             {
                 this.setState({
@@ -95,17 +100,22 @@ class Crawler extends Component {
         {
             this.setState({
                 listDataCrawler : crawlData.data.data.filter((value) => {
-                    return (value.rank >= 10000 && value.rank <= 1500000); 
+                    return ((value.rank >= 10000 && value.rank <= 1500000) || value.rank == ''); 
                 })
             })
 
             this.setState({
                 listData : this.state.listDataCrawler
             })
+
+            this.setState({
+                listDataOldName : this.state.listData
+            })
             
             this.setState({
                 modalShow : false
             })
+            
         }else if(crawlData.data.status === 204) {
             this.setState({
                 modalShow : false
@@ -151,6 +161,22 @@ class Crawler extends Component {
     }
 
     _changeString =  () => {
+        this.setState({
+            listDataNewName : this.state.listDataCrawler.filter((value) =>{
+                // console.log(value.name.indexOf(this.state.oldString));
+                // console.log(this.state.oldString);
+                // console.log(value.name)
+               return value.name.indexOf(this.state.oldString) != -1 ? value : '';
+            })
+        })
+        this.setState({
+            listDataOldName : this.state.listDataCrawler.filter((value) =>{
+                // console.log(value.name.indexOf(this.state.oldString));
+                // console.log(this.state.oldString);
+                // console.log(value.name)
+               return value.name.indexOf(this.state.oldString) == -1 ? value : '';
+            })
+        })
          this.setState({
             listData : this.state.listDataCrawler.map((value) =>{
                 let newString = value.name.replace(this.state.oldString,this.state.newString);
@@ -158,10 +184,12 @@ class Crawler extends Component {
                 return value;
             })
         })
+        
         this.setState({
             modalShowAlert : true,
             msgModal : 'Đổi chuỗi thành công'
         })
+        console.log(this.state.listDataNewName)
         
 
 

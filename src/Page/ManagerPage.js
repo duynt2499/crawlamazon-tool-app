@@ -13,7 +13,9 @@ import './../css/login.css';
 import Alert from './../Components/Alert';
 import ReactLoading from 'react-loading';
 import AlertModal from './../Components/AlertModal'
-import { async } from 'q';
+import AvatarDefault from './../Images/avatarDefault.png';
+import AvatarAdmin from './../Images/avatarAdmin.png';
+
 
 
 
@@ -164,7 +166,7 @@ export default class ManagerPage extends Component {
                 <Form inline>
                    
                 <FormControl type="text" placeholder="Search" className="mr-sm-2" disabled />
-               <Avatar width={40} height={40} src={`https://scontent.fsgn2-4.fna.fbcdn.net/v/t1.0-1/p240x240/67560540_706872929750491_5200925105890263040_n.jpg?_nc_cat=101&_nc_oc=AQm3yn7VTZYD6ovICC0KsIA7dMpctpus1KPudkSxBOohMLhw8Ekkrl5B8hifsRXKFr0&_nc_ht=scontent.fsgn2-4.fna&oh=d96282ea6ad6f4090f81c5bb04786edf&oe=5E36E31A`}></Avatar>
+               <Avatar width={40} height={40} src={this.state.checkRole !== false ? AvatarAdmin : AvatarDefault}></Avatar>
                    <a href={'/'}> <FaSignOutAlt   className='logOut' style={{fontSize : 20, marginLeft : 10, color:'#FFFFFF',cursor : 'hand'}}></FaSignOutAlt></a>
                 </Form>
             </Navbar.Collapse>

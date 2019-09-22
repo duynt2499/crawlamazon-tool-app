@@ -1,7 +1,8 @@
-import React, { Component , useState } from 'react';
+
+import React from 'react'
 import loadingImg from './../Images/loadImageGif.gif'
 import {Modal} from 'react-bootstrap';
-import ReactLoading from 'react-loading';
+
 export default function AlertModal(props) {
     
     

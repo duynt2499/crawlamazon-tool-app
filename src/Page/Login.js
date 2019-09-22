@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {Container,Col,Row,FormCheck} from 'react-bootstrap';
+import {Container,Col,Row} from 'react-bootstrap';
 import './../css/login.css';
 import logo from './../Images/toolLogo.png'
 import ReactLoading from 'react-loading';
@@ -30,6 +30,10 @@ export default class Login extends Component {
     submitUSer = async () => {
         
 
+       try {
+           this.setState({
+               isLoading : true
+           })
         let test = await axios.get(`${BASE_URL}/api/users/signIn?email=${this.state.email}&password=${this.state.password}`);
         this.setState({isLoading : true});
 
@@ -49,6 +53,9 @@ export default class Login extends Component {
             
         },2001);
         
+       } catch (error) {
+        this.setState({isLoading : false,msg : 'Không kết nối được đến server, vui lòng vào run file server'});
+       }
         
     }
 
