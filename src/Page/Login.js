@@ -41,12 +41,13 @@ export default class Login extends Component {
             }
             else if(test.data.status === 200)
             {
-                localStorage.setItem('token', test.data.token);
+                console.log(test.data)
+                localStorage.setItem('token', test.data.token.role);
                 this.login();
                 
             }
             
-        },2000);
+        },2001);
         
         
     }
