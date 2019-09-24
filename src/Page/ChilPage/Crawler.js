@@ -9,6 +9,8 @@ import Alert from './../../Components/Alert';
 import AlertModal from './../../Components/AlertModal'
 import ReactLoading from 'react-loading';
 import Modal from 'react-responsive-modal';
+import { asArray } from 'builder-util';
+import { async } from 'q';
 
 class Crawler extends Component {
     state = {
@@ -27,11 +29,62 @@ class Crawler extends Component {
         msgModal : '',
         listDataCrawler : [],
         listDataNewName : [],
-        listDataOldName : []
-
+        listDataOldName : [],
+        keywordArray : '',
+        listGetTay : ''
+ 
     }
     _renderLoadingBar = () => {
         return this.state.isLoading === true ? <ReactLoading type='spin' color='#FD5E1F' height={30} width={30} /> : '';
+    }
+
+    _onCrawlerArray = async () => {
+        const ArrayLink = this.state.keywordArray.split("\n");
+        
+        console.log(this.state.keyword + ' : ' + this.state.page)
+        this.setState({
+            modalShow : true
+        })
+
+        const crawlData = await Axios.post(`${BASE_URL}/api/crawlDataAmazon/getDataInAmazonCustom`,{
+            array3 : ArrayLink
+        });
+        
+
+        console.log(crawlData);  
+      
+        if(crawlData.data.status === 200)
+        {
+            this.setState({
+                listDataCrawler : crawlData.data.data.filter((value) => {
+                    return value; 
+                })
+            })
+
+            this.setState({
+                listData : this.state.listDataCrawler
+            })
+
+            this.setState({
+                listGetTay : this.state.listData
+            })
+
+           
+            
+            this.setState({
+                modalShow : false
+            })
+            
+        }else if(crawlData.data.status === 204) {
+            this.setState({
+                modalShow : false
+            })
+            this.setState({
+                modalShowAlert : true,
+                msgModal : crawlData.data.msg
+            })
+           
+        }
     }
 
 
@@ -53,7 +106,10 @@ class Crawler extends Component {
             })
             const DownloadImageSS = await Axios.post(`${BASE_URL}/api/crawlDataAmazon/DowloadImgChangeName`,{
                 listData: this.state.listDataNewName
-        })
+            })
+            const DownloadImageSSV = await Axios.post(`${BASE_URL}/api/crawlDataAmazon/DowloadImgGetHand`,{
+                listData: this.state.listGetTay
+            })
             if(DownloadImage.data.status === 200)
             {
                 this.setState({
@@ -112,9 +168,28 @@ class Crawler extends Component {
                 listDataOldName : this.state.listData
             })
             
+           
+            const crawlData2 = await Axios.get(`${BASE_URL}/api/crawlDataAmazon/getDataInAmazon?keyword=${this.state.keyword}&page=${this.state.page+1}`);
+            if(crawlData2.data.status === 200)
+        {
+            this.setState({
+                listDataCrawler : this.state.listDataCrawler.concat(crawlData2.data.data.filter((value) => {
+                    return ((value.rank >= 10000 && value.rank <= 1500000) || value.rank == ''); 
+                }))
+            })
+
+            this.setState({
+                listData : this.state.listData.concat(this.state.listDataCrawler)
+            })
+
+            this.setState({
+                listDataOldName : this.state.listDataOldName.concat(this.state.listData)
+            })
+            
             this.setState({
                 modalShow : false
             })
+        }
             
         }else if(crawlData.data.status === 204) {
             this.setState({
@@ -128,13 +203,14 @@ class Crawler extends Component {
         }
     }
     _renderDataCrawler = () => {
-        return this.state.listData.map((value) => {
+        return this.state.listData.map((value,index) => {
              return(
             <Col xs={3}>
                                     <Card className="Card-product" style={{ width: '100%' }}>
                                     <Card.Img variant="top" src={value.image} />
                                     <Card.Body>
                                         <Card.Title  className='text'>{value.name}</Card.Title>
+                                        <Card.Text className='text'>Key : {index}</Card.Text>
                                         <Card.Text  className='text'>
                                             <span>Rank : <span style={{color : '#ab000d',fontWeight:'bold'}}>{value.rank}</span></span> <br/>
                                             <span>Ngày đăng :  <span style={{color : '#303f9f',fontWeight:'bold'}}> {value.date}</span></span>
@@ -230,9 +306,27 @@ class Crawler extends Component {
                                     </Col>
                                     
                                 </Row>
+                                
                                 <Row style={{marginTop : 5}}>
                                     <Col xs={12}>
                                     <button onClick={() => {this._onCrawler()}} className='buttonStyle'><FaSpider style={{fontSize : 20}}/> Bắt đầu crawl</button>
+                                    </Col>
+                                </Row>
+                                <Row style={{marginTop : 30}}>
+                                    <Col xs={12}>
+                                        <span style={{fontFamily : 'Roboto',fontWeight:'lighter', marginBottom : 20}}><FaFeatherAlt/> Nhập link png gốc</span>
+                                    </Col>
+                                </Row>
+                                <Row style={{marginTop : 5}}>
+                                    <Col xs={12}>
+                                        <textarea rows="4" cols="50" placeholder={'Nhập link để get png'} onChange={(e) => {this.setState({keywordArray : e.target.value})}} className='inputStyle'/> 
+                                       
+                                    </Col>
+                                    
+                                </Row>
+                                <Row style={{marginTop : 5}}>
+                                    <Col xs={12}>
+                                    <button onClick={() => {this._onCrawlerArray()}} className='buttonStyle'><FaSpider style={{fontSize : 20}}/> Bắt đầu get png</button>
                                     </Col>
                                 </Row>
                                 <Row style={{marginTop : 15}}>
@@ -243,6 +337,9 @@ class Crawler extends Component {
                                     {this._renderKeyword()}
                                     </Col>
                                 </Row>
+
+                                
+                                
                             </Container>
                         </Col>
                         <Col xs={8}>

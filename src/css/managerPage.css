@@ -45,6 +45,10 @@
     -moz-box-shadow: 5px 5px 12px 0px #D4D4D4;
     -webkit-box-shadow: 5px 5px 12px 0px #D4D4D4;
 }
+.changeName{
+    border: none;
+    height: '100%';
+}
 
 .text {
     font-size: 11px

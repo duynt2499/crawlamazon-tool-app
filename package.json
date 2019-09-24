@@ -44,5 +44,11 @@
   },
   "devDependencies": {
     "electron-builder": "^21.2.0"
+  },
+  "build": {
+    "appId": "AmazonCrawler",
+    "mac": {
+      "category": "your.app.category.type"
+    }
   }
 }
