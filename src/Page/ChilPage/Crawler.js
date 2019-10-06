@@ -62,12 +62,14 @@ class Crawler extends Component {
             })
 
             this.setState({
-                listData : this.state.listDataCrawler
+                listDataOldName : this.state.listDataCrawler
             })
 
             this.setState({
-                listGetTay : this.state.listData
+                listData : this.state.listDataCrawler
             })
+
+         
 
            
             
@@ -107,9 +109,7 @@ class Crawler extends Component {
             const DownloadImageSS = await Axios.post(`${BASE_URL}/api/crawlDataAmazon/DowloadImgChangeName`,{
                 listData: this.state.listDataNewName
             })
-            const DownloadImageSSV = await Axios.post(`${BASE_URL}/api/crawlDataAmazon/DowloadImgGetHand`,{
-                listData: this.state.listGetTay
-            })
+       
             if(DownloadImage.data.status === 200)
             {
                 this.setState({

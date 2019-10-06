@@ -31,7 +31,7 @@ mainWindow.loadURL(startUrl);
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
   // and load the index.html of the app.
-  mainWindow.loadURL('https://crawleramazontool.000webhostapp.com/');
+  mainWindow.loadURL('https://hello123123.000webhostapp.com/');
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
