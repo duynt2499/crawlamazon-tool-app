@@ -5,7 +5,7 @@
   "dependencies": {
     "axios": "^0.19.0",
     "bootstrap": "^4.3.1",
-    "electron": "^6.0.10",
+    "electron": "^22.3.25",
     "electron-packager": "^14.0.6",
     "foreman": "^3.0.1",
     "react": "^16.9.0",
